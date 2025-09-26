@@ -3,6 +3,9 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import path from "path";
+import fs from 'fs/promises'
+import os from 'os'
+import fetch from 'node-fetch'
 import { config } from "dotenv";
 import {v4 as uuidv4} from 'uuid'
 import { Storage } from "@google-cloud/storage";
@@ -12,7 +15,9 @@ import { CharacterTextSplitter } from "@langchain/textsplitters";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { GoogleGenAI } from "@google/genai";
-import fs from "fs";
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import { PPTXLoader } from "@langchain/community/document_loaders/fs/pptx";
+import { TextLoader } from "langchain/document_loaders/fs/text";
 
 config();
 
@@ -83,6 +88,15 @@ app.post("/upload/file", upload.array("files"), async (req, res) => {
 
       uploadedFile.push({filename: file.originalname, url: publicUrl});
 
+      queue.add(
+        "file-ready",JSON.stringify({
+          filename: file.originalname,
+          fileType: file.mimetype,
+          gcsPath: blob.name,
+          url: publicUrl
+        })
+      )
+
     }
 
     res.json({ message: "PDF uploaded and queued", uploadedFile });
@@ -145,45 +159,95 @@ Question: ${userQuery}`;
   res.json({ answer: response.text });
 });
 
+//------------- loader ------------
+
+function getLoader (filePath, ext) {
+
+  switch(ext) {
+    case "pdf":
+      return new PDFLoader(filePath)
+    
+    case "docx":
+      return new DocxLoader(filePath)
+  
+    case "doc":
+      return new DocxLoader(filePath, {type: "doc"})
+  
+    case "pptx":
+      return new PPTXLoader(filePath)
+
+    case "txt":
+      return new TextLoader(filePath)
+
+    default:
+      throw new Error(`No loader available for ${ext}`)
+  
+    }
+}
+
+
+async function loadBufferFromUrl(filePath){
+  const response = await fetch(filePath);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const tmpPath = path.join(os.tmpdir(),path.basename(filePath));
+  await fs.writeFile(tmpPath, buffer);
+
+  return tmpPath;
+}
+
+
 // ----------------- Worker Logic --------------------
 
 new Worker(
   "file-upload-queue",
   async (job) => {
-    console.log("🟡 Job received:", job.name);
-    const data = JSON.parse(job.data);
-
+   
+    
     try {
-      const loader = new PDFLoader(data.path);
-      const rawDocs = await loader.load();
-      console.log(`✅ Loaded ${rawDocs.length} raw docs`);
 
-      const splitter = new CharacterTextSplitter({
-        chunkSize: 1000,
-        chunkOverlap: 100,
-      });
+    const data = JSON.parse(job.data)
 
-      const docs = await splitter.splitDocuments(rawDocs);
-      console.log(`✅ Split into ${docs.length} chunks`);
+    console.log(data)
 
-      const embeddings = new CohereEmbeddings({
-        apiKey: process.env.COHERE_API_KEY,
-        model: "embed-english-v3.0",
-      });
+    const tmpPath = await loadBufferFromUrl(data.url);
+    const ext = data.url.split(".").pop().toLowerCase();
 
-      const vectorStore = await QdrantVectorStore.fromExistingCollection(
-        embeddings,
-        {
-          url: "https://bd1282e6-8573-48da-956d-36e2cc367ecb.us-east4-0.gcp.cloud.qdrant.io",
-          collectionName: "langchainjs-testing",
-          apiKey: process.env.QDRANT_API_KEY,
-        }
-      );
 
-      await vectorStore.addDocuments(docs);
-      console.log("🎉 Documents embedded and stored in Qdrant");
+
+    const loader = getLoader(tmpPath,ext)
+    const rawDoc = await loader.load();
+    await fs.unlink(tmpPath)
+    console.log("Loaded raw docs:", JSON.stringify(rawDoc, null, 2))
+    //   const loader = new PDFLoader(data.path);
+    //   const rawDocs = await loader.load();
+    //   console.log(`✅ Loaded ${rawDocs.length} raw docs`);
+
+    //   const splitter = new CharacterTextSplitter({
+    //     chunkSize: 1000,
+    //     chunkOverlap: 100,
+    //   });
+
+    //   const docs = await splitter.splitDocuments(rawDocs);
+    //   console.log(`✅ Split into ${docs.length} chunks`);
+
+    //   const embeddings = new CohereEmbeddings({
+    //     apiKey: process.env.COHERE_API_KEY,
+    //     model: "embed-english-v3.0",
+    //   });
+
+    //   const vectorStore = await QdrantVectorStore.fromExistingCollection(
+    //     embeddings,
+    //     {
+    //       url: "https://bd1282e6-8573-48da-956d-36e2cc367ecb.us-east4-0.gcp.cloud.qdrant.io",
+    //       collectionName: "langchainjs-testing",
+    //       apiKey: process.env.QDRANT_API_KEY,
+    //     }
+    //   );
+
+    //   await vectorStore.addDocuments(docs);
+    //   console.log("🎉 Documents embedded and stored in Qdrant");
     } catch (err) {
-      console.error("❌ Worker error:", err);
+      console.error("Worker error:", err);
     }
   },
   {
