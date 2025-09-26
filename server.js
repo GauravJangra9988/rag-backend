@@ -217,35 +217,33 @@ new Worker(
     const loader = getLoader(tmpPath,ext)
     const rawDoc = await loader.load();
     await fs.unlink(tmpPath)
-    console.log("Loaded raw docs:", JSON.stringify(rawDoc, null, 2))
-    //   const loader = new PDFLoader(data.path);
-    //   const rawDocs = await loader.load();
-    //   console.log(`✅ Loaded ${rawDocs.length} raw docs`);
+    console.log("Loaded raw docs:")
+    // console.log("Loaded raw docs:", JSON.stringify(rawDoc, null, 2))
 
-    //   const splitter = new CharacterTextSplitter({
-    //     chunkSize: 1000,
-    //     chunkOverlap: 100,
-    //   });
+      const splitter = new CharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 100,
+      });
 
-    //   const docs = await splitter.splitDocuments(rawDocs);
-    //   console.log(`✅ Split into ${docs.length} chunks`);
+      const docs = await splitter.splitDocuments(rawDoc);
+      console.log(`Split into ${docs.length} chunks`);
 
-    //   const embeddings = new CohereEmbeddings({
-    //     apiKey: process.env.COHERE_API_KEY,
-    //     model: "embed-english-v3.0",
-    //   });
+      const embeddings = new CohereEmbeddings({
+        apiKey: process.env.COHERE_API_KEY,
+        model: "embed-english-v3.0",
+      });
 
-    //   const vectorStore = await QdrantVectorStore.fromExistingCollection(
-    //     embeddings,
-    //     {
-    //       url: "https://bd1282e6-8573-48da-956d-36e2cc367ecb.us-east4-0.gcp.cloud.qdrant.io",
-    //       collectionName: "langchainjs-testing",
-    //       apiKey: process.env.QDRANT_API_KEY,
-    //     }
-    //   );
+      const vectorStore = await QdrantVectorStore.fromExistingCollection(
+        embeddings,
+        {
+          url: "https://3730d721-6b6a-4105-83cf-c4f2b3b9faea.europe-west3-0.gcp.cloud.qdrant.io",
+          collectionName: "test1",
+          apiKey: process.env.QDRANT_API_KEY,
+        }
+      );
 
-    //   await vectorStore.addDocuments(docs);
-    //   console.log("🎉 Documents embedded and stored in Qdrant");
+      await vectorStore.addDocuments(docs);
+      console.log("Documents embedded and stored in Qdrant");
     } catch (err) {
       console.error("Worker error:", err);
     }
