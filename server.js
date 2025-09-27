@@ -18,6 +18,7 @@ import { GoogleGenAI } from "@google/genai";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { PPTXLoader } from "@langchain/community/document_loaders/fs/pptx";
 import { TextLoader } from "langchain/document_loaders/fs/text";
+import { ensureCollection } from "./checkCollection.js";
 
 config();
 
@@ -233,11 +234,15 @@ new Worker(
         model: "embed-english-v3.0",
       });
 
+      const collectionName = "test4"
+
+      await ensureCollection(collectionName)
+      
       const vectorStore = await QdrantVectorStore.fromExistingCollection(
         embeddings,
         {
           url: "https://3730d721-6b6a-4105-83cf-c4f2b3b9faea.europe-west3-0.gcp.cloud.qdrant.io",
-          collectionName: "test1",
+          collectionName: "test4",
           apiKey: process.env.QDRANT_API_KEY,
         }
       );
