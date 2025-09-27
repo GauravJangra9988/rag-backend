@@ -5,9 +5,9 @@ dotenv.config()
        
 
 const client = new QdrantClient({
-    url: "https://3730d721-6b6a-4105-83cf-c4f2b3b9faea.europe-west3-0.gcp.cloud.qdrant.io",
-    apiKey: process.env.QDRANT_API_KEY,
-    });
+  url: process.env.QDRANT_URL,
+  apiKey: process.env.QDRANT_API_KEY,
+});
 
 const collectionConfig = {
         vectors: {
@@ -21,8 +21,10 @@ export async function ensureCollection (collectionName) {
 
     const response = await client.getCollections();
 
+
+
     const collectionNames = response.collections.map((collection) =>{
-        collection.name
+        return collection.name
     })
 
     if(!collectionNames.includes(collectionName)){
