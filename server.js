@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 
 app.post("/upload/file", upload.array("files"), handleUpload)
 
-app.get("/chat", chatHandler)
+app.post("/chat", chatHandler)
 
 //------------- loader ------------
 
