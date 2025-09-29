@@ -36,3 +36,22 @@ export async function ensureCollection (collectionName) {
 }
 
 
+export async function isCollectionExists(collectionName) {
+  const response = await client.getCollections();
+
+  const collectionNames = response.collections.map((collection) => {
+    return collection.name;
+  });
+
+  return collectionNames.includes(collectionName);
+}
+
+
+export async function deleteCollection(collectionName){
+  await client.deleteCollection(collectionName);
+}
+
+
+
+
+

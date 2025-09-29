@@ -1,12 +1,11 @@
 import { Worker } from "bullmq";
 import { getLoader, loadBufferFromUrl } from "./docLoader.js";
-import { ensureCollection } from "./checkCollection.js";
+import { ensureCollection } from "./db_collection.js";
 import { CharacterTextSplitter } from "@langchain/textsplitters";
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 import fs from "fs/promises";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { QdrantVectorStore } from "@langchain/qdrant";
-
 
 dotenv.config();
 
@@ -17,14 +16,13 @@ const redisConnection = {
   tls: {},
 };
 
-
 new Worker(
   "file-upload-queue",
   async (job) => {
     try {
       const data = job.data;
 
-      console.log(data)
+      console.log(data);
 
       const tmpPath = await loadBufferFromUrl(data.url);
       const ext = data.url.split(".").pop().toLowerCase();
@@ -72,6 +70,3 @@ new Worker(
     concurrency: 5,
   }
 );
-
-
-

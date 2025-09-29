@@ -2,14 +2,24 @@ import { GoogleGenAI } from "@google/genai";
 import { CohereEmbeddings } from "@langchain/cohere";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import dotenv from "dotenv";
+import { isCollectionExists } from "./db_collection.js";
 
 dotenv.config();
 
 export const chatHandler = async (req, res) => {
-  console.log("query recieved")
-  console.log(req.body)
+  console.log("query recieved");
+  console.log(req.body);
   const userQuery = req.body.query;
   const user = req.cookies.sessionId;
+
+  const isExists = await isCollectionExists(user);
+
+  if (!isExists) {
+    return res
+      .status(404)
+      .json({ answer: "No documents uploaded yet, please upload a document" });
+  }
+
   const embeddings = new CohereEmbeddings({
     apiKey: process.env.COHERE_API_KEY,
     model: "embed-english-v3.0",
@@ -38,5 +48,5 @@ export const chatHandler = async (req, res) => {
     contents: SYSTEM_PROMPT,
   });
 
-  res.json({ answer: response.text });
+  res.status(200).json({ answer: response.text });
 };
