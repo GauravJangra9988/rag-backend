@@ -9,7 +9,7 @@ export const chatHandler = async (req, res) => {
   console.log("query recieved")
   console.log(req.body)
   const userQuery = req.body.query;
-  const user = req.body.user;
+  const user = req.cookies.sessionId;
   const embeddings = new CohereEmbeddings({
     apiKey: process.env.COHERE_API_KEY,
     model: "embed-english-v3.0",

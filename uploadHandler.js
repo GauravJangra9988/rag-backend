@@ -32,7 +32,7 @@ export const handleUpload = async (req, res) => {
       return res.status(400).json({ message: "No files uploaded" });
     }
 
-    const user = req.body.user;
+    const user = req.cookies.sessionId;
 
     const uploadedFile = [];
 
