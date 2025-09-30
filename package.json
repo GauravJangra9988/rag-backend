@@ -7,6 +7,7 @@
   "type": "module",
   "main": "worker.js",
   "scripts": {
+    "start": "concurrently \"node server.js\" \"node worker.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "@langchain/textsplitters": "^0.1.0",
     "@qdrant/js-client-rest": "^1.15.1",
     "bullmq": "^5.52.2",
+    "concurrently": "^9.2.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
