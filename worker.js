@@ -31,7 +31,6 @@ new Worker(
       const rawDoc = await loader.load();
       await fs.unlink(tmpPath);
       console.log("Loaded raw docs:");
-      // console.log("Loaded raw docs:", JSON.stringify(rawDoc, null, 2))
 
       const splitter = new CharacterTextSplitter({
         chunkSize: 1000,

@@ -67,9 +67,9 @@ export const handleUpload = async (req, res) => {
       });
     }
 
-    res.json({ message: "PDF uploaded and queued", uploadedFile });
+    res.status(200).json({ message: "Documents Uploaded", uploadedFile });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({error: error.message})
   }
 };
 
