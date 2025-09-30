@@ -14,8 +14,11 @@ dotenv.config();
 
 const app = express();
     app.use((req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-      res.header("Access-Control-Allow-Credentials", "true"); // Required when credentials are included
+      res.header(
+        "Access-Control-Allow-Origin",
+        "https://rag-frontend-umber.vercel.app/"
+      );
+      res.header("Access-Control-Allow-Credentials", "true");
       res.header(
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept"
