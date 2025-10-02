@@ -48,10 +48,6 @@ export const chatHandler = async (req, res) => {
       contents: SYSTEM_PROMPT,
     });
 
-    if(!response.ok){
-      throw new Error();
-    }
-
     res.status(200).json({ answer: response.text });
   } catch(error){
     res.status(500).json({message: "Internal Server Error, Try Again"})
