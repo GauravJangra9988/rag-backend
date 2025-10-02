@@ -10,7 +10,7 @@ export const sessionHandler = (req, res) => {
     if(!sessionId){
         sessionId = uuid;
         
-        res.cookie("sessionId", sessionId);
+        res.cookie("sessionId", sessionId, {maxAge: 60 * 60 * 24 * 1000});
         return res.status(200).json({ message: "New session assigned, Please add a document" });
     }
 
