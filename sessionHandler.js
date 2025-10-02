@@ -7,7 +7,7 @@ export const sessionHandler = (req, res) => {
     var sessionId = req.cookies.sessionId
     
 
-    if(!sessionId){
+    if(!sessionId || sessionId === ""){
         sessionId = uuid;
         
         res.cookie("sessionId", sessionId, {sameSite: "none",secure:"true",maxAge: 60 * 60 * 24 * 1000});
