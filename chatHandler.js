@@ -3,7 +3,7 @@ import { CohereEmbeddings } from "@langchain/cohere";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import dotenv from "dotenv";
 import { isCollectionExists } from "./db_collection.js";
-import markdownToTxt from "markdown-to-txt";
+import removeMd from '@brainfish-ai/remove-markdown'
 
 dotenv.config();
 
@@ -48,9 +48,11 @@ export const chatHandler = async (req, res) => {
       model: "gemini-2.5-flash",
       contents: SYSTEM_PROMPT,
     });
-    const simpleResponse = markdownToTxt(response.text)
+
+    const simpleResponse = removeMd(response.text)
     res.status(200).json({ answer: simpleResponse });
   } catch(error){
+    console.log(error.message)
     res.status(500).json({message: "Internal Server Error, Try Again"})
   }
   
