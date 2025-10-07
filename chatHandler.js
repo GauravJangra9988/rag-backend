@@ -3,6 +3,7 @@ import { CohereEmbeddings } from "@langchain/cohere";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import dotenv from "dotenv";
 import { isCollectionExists } from "./db_collection.js";
+import markdownToTxt from "markdown-to-txt";
 
 dotenv.config();
 
@@ -47,8 +48,8 @@ export const chatHandler = async (req, res) => {
       model: "gemini-2.5-flash",
       contents: SYSTEM_PROMPT,
     });
-
-    res.status(200).json({ answer: response.text });
+    const simpleResponse = markdownToTxt(response.text)
+    res.status(200).json({ answer: simpleResponse });
   } catch(error){
     res.status(500).json({message: "Internal Server Error, Try Again"})
   }
