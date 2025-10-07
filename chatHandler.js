@@ -52,7 +52,6 @@ export const chatHandler = async (req, res) => {
     const simpleResponse = removeMd(response.text)
     res.status(200).json({ answer: simpleResponse });
   } catch(error){
-    console.log(error.message)
     res.status(500).json({message: "Internal Server Error, Try Again"})
   }
   
